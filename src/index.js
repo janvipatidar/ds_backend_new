@@ -63,6 +63,20 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error('Failed to start server:', error.message || error);
+
+    // Atlas blocks unknown IPs by default; Render uses different egress IPs than your laptop
+    if (
+      error.name === 'MongooseServerSelectionError' ||
+      String(error.message).includes('whitelist')
+    ) {
+      console.error(`
+MongoDB Atlas: allow your app host to connect
+  • Atlas → Network Access → Add IP Address → allow "0.0.0.0/0" (anywhere) for dev/hobby, OR
+  • Add Render’s outbound IPs only (Render Dashboard → your service → outbound IPs), for tighter security.
+  • Docs: https://www.mongodb.com/docs/atlas/security/ip-access-list/
+`);
+    }
+
     if (error?.stack) console.error(error.stack);
     process.exit(1);
   }
