@@ -4,7 +4,14 @@ import { z } from 'zod';
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().default('5000'),
-  MONGODB_URI: z.string().url(),
+  // Use prefix check, not z.url() — Atlas passwords with @, #, etc. often break URL parsing
+  MONGODB_URI: z
+    .string()
+    .min(1)
+    .refine(
+      (val) => val.startsWith('mongodb://') || val.startsWith('mongodb+srv://'),
+      { message: 'MONGODB_URI must start with mongodb:// or mongodb+srv://' }
+    ),
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default('7d'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('30d'),

@@ -12,6 +12,9 @@ import { Admin } from './models/Admin.model.js';
 
 const app = express();
 
+// Render, Heroku, etc. sit behind a reverse proxy — needed for correct client IP and rate limits
+app.set('trust proxy', 1);
+
 app.use(helmet());
 app.use(
   cors({
@@ -47,11 +50,20 @@ const startServer = async () => {
 
     await Admin.seedDefaultAdmin();
 
-    app.listen(config.port, () => {
-      logger.info(`Server running on port ${config.port} in ${config.nodeEnv} mode`);
+    const port = Number(config.port);
+    const host = '0.0.0.0';
+
+    const server = app.listen(port, host, () => {
+      logger.info(`Server listening on http://${host}:${port} (${config.nodeEnv})`);
+    });
+
+    server.on('error', (err) => {
+      console.error('HTTP server failed to start:', err.message);
+      process.exit(1);
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error('Failed to start server:', error.message || error);
+    if (error?.stack) console.error(error.stack);
     process.exit(1);
   }
 };
