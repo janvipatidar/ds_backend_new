@@ -1,0 +1,121 @@
+import mongoose, { Document, Schema } from 'mongoose';
+
+export interface ICandidate extends Document {
+  name: string;
+  designation: string;
+  dateOfBirth: Date;
+  education: string;
+  experience: number;
+  noticePeriod: string;
+  currentEmployer: string;
+  previousEmployer: string;
+  keySkills: string[];
+  currentLocation: string;
+  currentIndustry: string;
+  pastIndustry: string;
+  email: string;
+  phone: string;
+  currentAnnualSalary: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const candidateSchema = new Schema<ICandidate>(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      index: 'text',
+    },
+    designation: {
+      type: String,
+      required: true,
+      trim: true,
+      index: 'text',
+    },
+    dateOfBirth: {
+      type: Date,
+      required: true,
+    },
+    education: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    experience: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    noticePeriod: {
+      type: String,
+      required: true,
+      enum: ['Immediate', '15 days', '1 month', '2 months', '3 months', '6 months'],
+    },
+    currentEmployer: {
+      type: String,
+      trim: true,
+      index: 'text',
+    },
+    previousEmployer: {
+      type: String,
+      trim: true,
+    },
+    keySkills: {
+      type: [String],
+      default: [],
+      index: 'text',
+    },
+    currentLocation: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    currentIndustry: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    pastIndustry: {
+      type: String,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+      unique: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    currentAnnualSalary: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Compound indexes for efficient filtering
+candidateSchema.index({ experience: 1 });
+candidateSchema.index({ currentLocation: 1 });
+candidateSchema.index({ currentAnnualSalary: 1 });
+candidateSchema.index({ noticePeriod: 1 });
+candidateSchema.index({ currentIndustry: 1, pastIndustry: 1 });
+candidateSchema.index({ keySkills: 1 });
+
+// Text index for full-text search
+candidateSchema.index(
+  { name: 'text', designation: 'text', keySkills: 'text', currentEmployer: 'text' },
+  { default_language: 'english' }
+);
+
+export const Candidate = mongoose.model<ICandidate>('Candidate', candidateSchema);
