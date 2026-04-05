@@ -51,8 +51,7 @@ const adminSchema = new mongoose.Schema(
   }
 );
 
-adminSchema.index({ email: 1 });
-adminSchema.index({ username: 1 });
+// email and username indexes come from unique: true on those fields
 
 // True while lockUntil is in the future
 adminSchema.virtual('isLocked').get(function () {

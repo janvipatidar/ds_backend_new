@@ -85,7 +85,7 @@ const candidateSchema = new mongoose.Schema(
 );
 
 candidateSchema.index({ experience: 1 });
-candidateSchema.index({ currentLocation: 1 });
+// currentLocation: index already set on the field definition
 candidateSchema.index({ currentAnnualSalary: 1 });
 candidateSchema.index({ noticePeriod: 1 });
 candidateSchema.index({ currentIndustry: 1, pastIndustry: 1 });
