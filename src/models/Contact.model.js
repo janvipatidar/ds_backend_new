@@ -1,15 +1,6 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface IContact extends Document {
-  name: string;
-  email: string;
-  message: string;
-  phone: string,
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const contactSchema = new Schema<IContact>(
+const contactSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -42,8 +33,7 @@ const contactSchema = new Schema<IContact>(
   }
 );
 
-// Index for faster queries
 contactSchema.index({ createdAt: -1 });
 contactSchema.index({ email: 1 });
 
-export const Contact = mongoose.model<IContact>('Contact', contactSchema);
+export const Contact = mongoose.model('Contact', contactSchema);

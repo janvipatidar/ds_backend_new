@@ -1,22 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/AppError.js';
 import { logger } from '../lib/logger.js';
 
-interface ErrorResponse {
-  success: false;
-  error: {
-    message: string;
-    code: string;
-    details?: Record<string, unknown>;
-  };
-}
-
-export const errorHandler = (
-  err: Error,
-  _req: Request,
-  res: Response<ErrorResponse>,
-  _next: NextFunction
-): void => {
+export const errorHandler = (err, _req, res, _next) => {
   if (err instanceof AppError) {
     logger.error({
       statusCode: err.statusCode,
@@ -36,7 +21,7 @@ export const errorHandler = (
     return;
   }
 
-  // Unexpected errors
+  // Unexpected errors — log full details, send generic response
   logger.error({
     message: err.message,
     stack: err.stack,

@@ -1,16 +1,6 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface IUser extends Document {
-  name: string;
-  email: string;
-  password: string;
-  role: 'admin' | 'user' | 'moderator';
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const userSchema = new Schema<IUser>(
+const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -46,7 +36,6 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// Index for email lookups
 userSchema.index({ email: 1 });
 
-export const User = mongoose.model<IUser>('User', userSchema);
+export const User = mongoose.model('User', userSchema);

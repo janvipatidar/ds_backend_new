@@ -21,7 +21,7 @@ if (!parseResult.success) {
   process.exit(1);
 }
 
-export const config = {
+const config = {
   nodeEnv: parseResult.data.NODE_ENV,
   port: parseResult.data.PORT,
   mongoUri: parseResult.data.MONGODB_URI,
@@ -37,4 +37,5 @@ export const config = {
   },
 };
 
+export { config };
 export default config;

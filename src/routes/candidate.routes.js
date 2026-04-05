@@ -11,10 +11,8 @@ import { authMiddleware } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
-// Public route - create candidate from jobseeker form
 router.post('/', createCandidate);
 
-// Protected routes
 router.get('/', authMiddleware, getCandidates);
 router.get('/stats', authMiddleware, getCandidateStats);
 router.get('/:id', authMiddleware, getCandidateById);

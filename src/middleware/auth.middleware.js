@@ -1,27 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/env.js';
 import { UnauthorizedError } from '../utils/AppError.js';
 
-export interface AuthUser {
-  id: string;
-  email: string;
-  role: string;
-}
-
-declare global {
-  namespace Express {
-    interface Request {
-      user?: AuthUser;
-    }
-  }
-}
-
-export const authMiddleware = (
-  req: Request,
-  _res: Response,
-  next: NextFunction
-): void => {
+/**
+ * Requires `Authorization: Bearer <token>`.
+ * On success, attaches decoded payload to `req.user` (id, email, role).
+ */
+export const authMiddleware = (req, _res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -30,8 +15,7 @@ export const authMiddleware = (
     }
 
     const token = authHeader.split(' ')[1];
-
-    const decoded = jwt.verify(token, config.jwt.secret) as AuthUser;
+    const decoded = jwt.verify(token, config.jwt.secret);
     req.user = decoded;
 
     next();

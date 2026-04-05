@@ -1,26 +1,6 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface ICandidate extends Document {
-  name: string;
-  designation: string;
-  dateOfBirth: Date;
-  education: string;
-  experience: number;
-  noticePeriod: string;
-  currentEmployer: string;
-  previousEmployer: string;
-  keySkills: string[];
-  currentLocation: string;
-  currentIndustry: string;
-  pastIndustry: string;
-  email: string;
-  phone: string;
-  currentAnnualSalary: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const candidateSchema = new Schema<ICandidate>(
+const candidateSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -104,7 +84,6 @@ const candidateSchema = new Schema<ICandidate>(
   }
 );
 
-// Compound indexes for efficient filtering
 candidateSchema.index({ experience: 1 });
 candidateSchema.index({ currentLocation: 1 });
 candidateSchema.index({ currentAnnualSalary: 1 });
@@ -112,10 +91,9 @@ candidateSchema.index({ noticePeriod: 1 });
 candidateSchema.index({ currentIndustry: 1, pastIndustry: 1 });
 candidateSchema.index({ keySkills: 1 });
 
-// Text index for full-text search
 candidateSchema.index(
   { name: 'text', designation: 'text', keySkills: 'text', currentEmployer: 'text' },
   { default_language: 'english' }
 );
 
-export const Candidate = mongoose.model<ICandidate>('Candidate', candidateSchema);
+export const Candidate = mongoose.model('Candidate', candidateSchema);

@@ -1,11 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
 import { logger } from '../lib/logger.js';
 
-export const loggerMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
+/** Logs method, URL, status, duration when the response finishes. */
+export const loggerMiddleware = (req, res, next) => {
   const startTime = Date.now();
 
   res.on('finish', () => {

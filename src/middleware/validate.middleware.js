@@ -1,9 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
+import { ZodError } from 'zod';
 import { ValidationError } from '../utils/AppError.js';
 
-export const validate = (schema: ZodSchema) => {
-  return (req: Request, _res: Response, next: NextFunction): void => {
+/**
+ * Validates req.body, req.query, and req.params against a Zod schema
+ * shaped as { body, query, params }.
+ */
+export const validate = (schema) => {
+  return (req, _res, next) => {
     try {
       const result = schema.safeParse({
         body: req.body,
@@ -19,7 +22,6 @@ export const validate = (schema: ZodSchema) => {
         });
       }
 
-      // Replace with validated data
       req.body = result.data.body;
       req.query = result.data.query;
       req.params = result.data.params;
@@ -29,7 +31,7 @@ export const validate = (schema: ZodSchema) => {
       if (error instanceof ZodError) {
         next(new ValidationError('Validation failed', { errors: error.errors }));
       } else {
-        next(error as Error);
+        next(error);
       }
     }
   };

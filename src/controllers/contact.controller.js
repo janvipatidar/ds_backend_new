@@ -1,14 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
 import { Contact } from '../models/Contact.model.js';
 import { AppError } from '../utils/AppError.js';
 
-export const createContact = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const createContact = async (req, res, next) => {
   try {
-    console.log("req",req.body)
+    console.log('req', req.body);
     const contact = await Contact.create(req.body);
 
     res.status(201).json({
@@ -21,16 +16,12 @@ export const createContact = async (
   }
 };
 
-export const getContacts = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getContacts = async (req, res, next) => {
   try {
     const { page = '1', limit = '20' } = req.query;
 
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
     const skip = (pageNum - 1) * limitNum;
 
     const [contacts, total] = await Promise.all([
@@ -53,11 +44,7 @@ export const getContacts = async (
   }
 };
 
-export const getContactById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getContactById = async (req, res, next) => {
   try {
     const contact = await Contact.findById(req.params.id);
 

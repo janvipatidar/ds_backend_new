@@ -1,29 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
 import { Candidate } from '../models/Candidate.model.js';
 import { AppError } from '../utils/AppError.js';
 
-interface FilterParams {
-  page?: string;
-  limit?: string;
-  sort?: string;
-  search?: string;
-  experienceMin?: string;
-  experienceMax?: string;
-  location?: string;
-  skills?: string;
-  currentCompany?: string;
-  salaryMin?: string;
-  salaryMax?: string;
-  noticePeriod?: string;
-  industry?: string;
-  pastIndustry?: string;
-}
-
-export const createCandidate = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const createCandidate = async (req, res, next) => {
   try {
     const candidate = await Candidate.create(req.body);
 
@@ -37,11 +15,7 @@ export const createCandidate = async (
   }
 };
 
-export const getCandidates = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getCandidates = async (req, res, next) => {
   try {
     const {
       page = '1',
@@ -58,47 +32,39 @@ export const getCandidates = async (
       noticePeriod,
       industry,
       pastIndustry,
-    } = req.query as FilterParams;
+    } = req.query;
 
-    // Build filter query
-    const query: Record<string, unknown> = {};
+    const query = {};
 
-    // Experience range
     if (experienceMin || experienceMax) {
       query.experience = {};
-      if (experienceMin) (query.experience as Record<string, number>).$gte = Number(experienceMin);
-      if (experienceMax) (query.experience as Record<string, number>).$lte = Number(experienceMax);
+      if (experienceMin) query.experience.$gte = Number(experienceMin);
+      if (experienceMax) query.experience.$lte = Number(experienceMax);
     }
 
-    // Location
     if (location) {
       query.currentLocation = new RegExp(location, 'i');
     }
 
-    // Skills (multi-select)
     if (skills) {
       const skillArray = skills.split(',').map((s) => s.trim());
       query.keySkills = { $in: skillArray };
     }
 
-    // Current company
     if (currentCompany) {
       query.currentEmployer = new RegExp(currentCompany, 'i');
     }
 
-    // Salary range
     if (salaryMin || salaryMax) {
       query.currentAnnualSalary = {};
-      if (salaryMin) (query.currentAnnualSalary as Record<string, number>).$gte = Number(salaryMin);
-      if (salaryMax) (query.currentAnnualSalary as Record<string, number>).$lte = Number(salaryMax);
+      if (salaryMin) query.currentAnnualSalary.$gte = Number(salaryMin);
+      if (salaryMax) query.currentAnnualSalary.$lte = Number(salaryMax);
     }
 
-    // Notice period
     if (noticePeriod) {
       query.noticePeriod = noticePeriod;
     }
 
-    // Industry (current & past)
     if (industry) {
       query.$or = [
         { currentIndustry: new RegExp(industry, 'i') },
@@ -110,20 +76,17 @@ export const getCandidates = async (
       query.pastIndustry = new RegExp(pastIndustry, 'i');
     }
 
-    // Full-text search
     if (search) {
       query.$text = { $search: search };
     }
 
-    // Calculate pagination
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // Execute query with sorting and pagination
     const [candidates, total] = await Promise.all([
       Candidate.find(search ? { $text: { $search: search } } : query)
-        .sort(sort as string)
+        .sort(sort)
         .skip(skip)
         .limit(limitNum)
         .lean(),
@@ -145,11 +108,7 @@ export const getCandidates = async (
   }
 };
 
-export const getCandidateById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getCandidateById = async (req, res, next) => {
   try {
     const candidate = await Candidate.findById(req.params.id);
 
@@ -166,11 +125,7 @@ export const getCandidateById = async (
   }
 };
 
-export const updateCandidate = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const updateCandidate = async (req, res, next) => {
   try {
     const candidate = await Candidate.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -191,11 +146,7 @@ export const updateCandidate = async (
   }
 };
 
-export const deleteCandidate = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const deleteCandidate = async (req, res, next) => {
   try {
     const candidate = await Candidate.findByIdAndDelete(req.params.id);
 
@@ -212,11 +163,7 @@ export const deleteCandidate = async (
   }
 };
 
-export const getCandidateStats = async (
-  _req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getCandidateStats = async (_req, res, next) => {
   try {
     const stats = await Candidate.aggregate([
       {

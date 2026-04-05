@@ -1,27 +1,7 @@
-import mongoose, { Document, Schema, Model } from 'mongoose';
+import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-export interface IAdmin extends Document {
-  username: string;
-  email: string;
-  password: string;
-  role: 'super_admin' | 'recruiter';
-  isActive: boolean;
-  lastLogin: Date | null;
-  loginAttempts: number;
-  lockUntil: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  comparePassword(candidatePassword: string): Promise<boolean>;
-  incrementLoginAttempts(): Promise<void>;
-  resetLoginAttempts(): Promise<void>;
-}
-
-interface IAdminModel extends Model<IAdmin> {
-  seedDefaultAdmin(): Promise<void>;
-}
-
-const adminSchema = new Schema<IAdmin, IAdminModel>(
+const adminSchema = new mongoose.Schema(
   {
     username: {
       type: String,
@@ -71,16 +51,14 @@ const adminSchema = new Schema<IAdmin, IAdminModel>(
   }
 );
 
-// Index for authentication queries
 adminSchema.index({ email: 1 });
 adminSchema.index({ username: 1 });
 
-// Virtual for locked status
+// True while lockUntil is in the future
 adminSchema.virtual('isLocked').get(function () {
   return this.lockUntil && this.lockUntil > new Date();
 });
 
-// Hash password before saving
 adminSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
@@ -90,38 +68,30 @@ adminSchema.pre('save', async function (next) {
   next();
 });
 
-// Compare password method
-adminSchema.methods.comparePassword = async function (
-  candidatePassword: string
-): Promise<boolean> {
+adminSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Increment login attempts
 adminSchema.methods.incrementLoginAttempts = async function () {
-  // If already locked, don't increment
   if (this.lockUntil && this.lockUntil < new Date()) {
     return this.resetLoginAttempts();
   }
 
-  const updates: Record<string, unknown> = { $inc: { loginAttempts: 1 } };
+  const updates = { $inc: { loginAttempts: 1 } };
 
-  // Lock after 5 failed attempts for 30 minutes
   if (this.loginAttempts + 1 >= 5) {
-    updates.$set = { lockUntil: new Date(Date.now() + 30 * 60 * 1000) }; // 30 minutes
+    updates.$set = { lockUntil: new Date(Date.now() + 30 * 60 * 1000) };
   }
 
   await this.updateOne(updates);
 };
 
-// Reset login attempts
 adminSchema.methods.resetLoginAttempts = async function () {
   await this.updateOne({
     $set: { loginAttempts: 0, lockUntil: null },
   });
 };
 
-// Static method to seed default admin
 adminSchema.statics.seedDefaultAdmin = async function () {
   const exists = await this.findOne({ email: 'admin@recruiter.com' });
   if (!exists) {
@@ -135,18 +105,12 @@ adminSchema.statics.seedDefaultAdmin = async function () {
   }
 };
 
-// Static method to create new admin (only super_admin can do this)
-adminSchema.statics.createAdmin = async function (data: {
-  username: string;
-  email: string;
-  password: string;
-  role?: 'super_admin' | 'recruiter';
-}) {
+adminSchema.statics.createAdmin = async function (data) {
   const existing = await this.findOne({ email: data.email });
   if (existing) {
     throw new Error('Admin with this email already exists');
   }
-  
+
   return this.create({
     username: data.username,
     email: data.email,
@@ -155,4 +119,4 @@ adminSchema.statics.createAdmin = async function (data: {
   });
 };
 
-export const Admin = mongoose.model<IAdmin, IAdminModel>('Admin', adminSchema);
+export const Admin = mongoose.model('Admin', adminSchema);
