@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch server.js",
+    "build": "node -e \"console.log('No compile step (plain JavaScript).')\"",
     "start": "node server.js",
     "lint": "eslint src --max-warnings 0",
     "test": "vitest",
